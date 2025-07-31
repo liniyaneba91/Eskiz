@@ -1,1 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Конструктор эскиза памятника</title>
+  <style>
+    body { font-family: sans-serif; background: #f0f0f0; text-align: center; padding: 20px; }
+    #controls { max-width: 400px; margin: auto; }
+    input, select, textarea, button { margin: 8px 0; width: 100%; padding: 8px; font-size: 16px; }
+    #preview { margin: 20px auto; background: #000; color: #fff; position: relative; overflow: hidden; }
+    #symbolPreview { position: absolute; top: 12px; right: 12px; font-size: 40px; }
+    #photoPreview { position: absolute; top: 60px; left: 50%; width: 140px; height: 180px; object-fit: cover; transform: translateX(-50%); border-radius: 4px; }
+    #infoPreview { position: absolute; bottom: 20px; width: 100%; font-size: 20px; white-space: pre-wrap; line-height: 1.2; }
+  </style>
+</head>
+<body>
+  <h1>Конструктор эскиза памятника</h1>
+  <div id="controls">
+    <input type="file" id="photoInput" accept="image/*">
+    <input type="text" id="fio" placeholder="ФИО">
+    <input type="text" id="dates" placeholder="01.01.1950 – 23.11.2020">
+    <textarea id="epitaph" placeholder="Эпитафия"></textarea>
+    <select id="symbol">
+      <option value="">Без символа</option>
+      <option value="☪">Ислам (☪)</option>
+      <option value="✝">Христианство (✝)</option>
+    </select>
+    <select id="size">
+      <option value="800x400">800×400 мм</option>
+      <option value="1000x500">1000×500 мм</option>
+    </select>
+    <button id="downloadBtn">Скачать эскиз (PNG)</button>
+  </div>
+
+  <div id="preview">
+    <div id="symbolPreview"></div>
+    <img id="photoPreview" src="" alt="">
+    <div id="infoPreview"></div>
+  </div>
+
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script>
+    const photoInput = document.getElementById('photoInput');
+    const photoPreview = document.getElementById('photoPreview');
+    const fio = document.getElementById('fio');
+    const dates = document.getElementById('dates');
+    const epitaph = document.getElementById('epitaph');
+    const symbol = document.getElementById('symbol');
+    const symbolPreview = document.getElementById('symbolPreview');
+    const infoPreview = document.getElementById('infoPreview');
+    const size = document.getElementById('size');
+    const preview = document.getElementById('preview');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    photoInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = ev => photoPreview.src = ev.target.result;
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function updatePreview() {
+      infoPreview.textContent = `${fio.value}\n${dates.value}\n\n${epitaph.value}`;
+      symbolPreview.textContent = symbol.value;
+      const [w, h] = size.value.split('x');
+      preview.style.width = w + 'px';
+      preview.style.height = h + 'px';
+    }
+
+    [fio, dates, epitaph, symbol, size].forEach(el => el.addEventListener('input', updatePreview));
+    size.addEventListener('change', updatePreview);
+
+    downloadBtn.addEventListener('click', () => {
+      html2canvas(preview).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'eskiz.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    });
+
+    updatePreview();
+  </script>
+</body>
+</html>
 
